@@ -10,10 +10,18 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['firebasestorage.googleapis.com'],
+    unoptimized: true
   },
   typescript: {
-    ignoreBuildErrors: false,
+    ignoreBuildErrors: false
   },
+  eslint: {
+    ignoreDuringBuilds: false
+  },
+  poweredByHeader: false,
+  compress: true,
+  generateEtags: true,
+  productionBrowserSourceMaps: false
 }
 
 mergeConfig(nextConfig, userConfig)

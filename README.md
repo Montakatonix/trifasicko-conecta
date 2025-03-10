@@ -33,7 +33,7 @@ Plataforma web para la comparación de tarifas de luz e internet, desarrollada c
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/trifasicko-conecta.git
+git clone https://github.com/Montakatonix/trifasicko-conecta.git
 cd trifasicko-conecta
 ```
 
@@ -45,13 +45,13 @@ npm install
 3. Configurar variables de entorno:
 Crear un archivo `.env.local` con las siguientes variables:
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
+NEXT_PUBLIC_FIREBASE_API_KEY=tu_api_key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tu_auth_domain
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=tu_project_id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=tu_storage_bucket
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=tu_messaging_sender_id
+NEXT_PUBLIC_FIREBASE_APP_ID=tu_app_id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=tu_measurement_id
 ```
 
 4. Iniciar el servidor de desarrollo:
