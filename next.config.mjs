@@ -17,10 +17,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true
   },
-  poweredByHeader: false,
-  compress: true,
-  generateEtags: true,
-  productionBrowserSourceMaps: true,
   experimental: {
     appDir: true
   }

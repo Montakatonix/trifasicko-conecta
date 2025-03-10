@@ -7,7 +7,6 @@ import Header from "@/components/header"
 import Footer from "@/components/footer"
 import { Chatbot } from "@/components/chatbot"
 import { Notifications } from "@/components/notifications"
-import { app } from "@/lib/firebase"
 
 const inter = Inter({ subsets: ["latin"] })
 
