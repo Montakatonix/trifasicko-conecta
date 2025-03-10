@@ -14,7 +14,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Trifasicko Conecta | Comparador de Tarifas",
   description: "Encuentra las mejores tarifas de luz e Internet con nuestro comparador profesional",
-    generator: 'v0.dev'
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -30,7 +30,7 @@ export default function RootLayout({
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />
-            {app && <Notifications />}
+            <Notifications />
             <Chatbot />
           </div>
         </AuthProvider>
