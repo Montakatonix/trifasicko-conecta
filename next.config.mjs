@@ -27,12 +27,13 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http:; font-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;"
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: http: *; font-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com;"
           }
         ]
       }
     ]
-  }
+  },
+  output: 'standalone'
 }
 
 export default nextConfig
