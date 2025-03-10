@@ -23,10 +23,25 @@ const nextConfig = {
         fs: false,
         net: false,
         tls: false,
-        crypto: false,
-        stream: false,
-        undici: false
+        crypto: require.resolve('crypto-browserify'),
+        stream: require.resolve('stream-browserify'),
+        url: require.resolve('url/'),
+        zlib: require.resolve('browserify-zlib'),
+        http: require.resolve('stream-http'),
+        https: require.resolve('https-browserify'),
+        assert: require.resolve('assert/'),
+        buffer: require.resolve('buffer/'),
+        util: require.resolve('util/'),
+        undici: false,
+        'process/browser': require.resolve('process/browser')
       };
+      
+      config.plugins.push(
+        new config.webpack.ProvidePlugin({
+          process: 'process/browser',
+          Buffer: ['buffer', 'Buffer']
+        })
+      );
     }
     return config;
   },
