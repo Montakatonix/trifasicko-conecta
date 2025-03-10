@@ -4,65 +4,65 @@
 
 @layer base {
   :root {
-    --background: 36 33% 97%;
-    --foreground: 20 14.3% 4.1%;
+    --background: 224 71% 98%;
+    --foreground: 224 71% 4%;
 
-    --card: 36 33% 97%;
-    --card-foreground: 20 14.3% 4.1%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 71% 4%;
 
-    --popover: 36 33% 97%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71% 4%;
 
-    --primary: 36 40% 80%;
-    --primary-foreground: 24 9.8% 10%;
+    --primary: 262 80% 50%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 14% 80%;
-    --secondary-foreground: 220 7% 21%;
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 36 10% 90%;
-    --muted-foreground: 25 5.3% 44.7%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
 
-    --accent: 220 14% 80%;
-    --accent-foreground: 220 7% 21%;
+    --accent: 262 80% 50%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 36 40% 70%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 262 80% 50%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
 
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
+    --card: 224 71% 4%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 36 40% 50%;
-    --primary-foreground: 60 9.1% 97.8%;
+    --primary: 263 70% 50%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 220 14% 30%;
-    --secondary-foreground: 60 9.1% 97.8%;
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
 
-    --accent: 220 14% 30%;
-    --accent-foreground: 60 9.1% 97.8%;
+    --accent: 263 70% 50%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 36 40% 50%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 263 70% 50%;
   }
 }
 
@@ -77,5 +77,80 @@
 
 .hero-gradient {
   background: linear-gradient(to right, rgba(225, 213, 190, 0.8), rgba(192, 192, 192, 0.8));
+}
+
+/* Estilos personalizados para las cards */
+.card {
+  @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  background: linear-gradient(135deg, hsl(var(--card)/0.5) 0%, hsl(var(--card)) 100%);
+  backdrop-filter: blur(10px);
+}
+
+/* Estilos para los botones */
+.button {
+  @apply relative overflow-hidden transition-all duration-300;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+}
+
+.button:hover {
+  @apply shadow-lg transform -translate-y-0.5;
+}
+
+.button::before {
+  content: '';
+  @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+  background: linear-gradient(135deg, hsl(var(--secondary)) 0%, hsl(var(--primary)) 100%);
+}
+
+.button:hover::before {
+  @apply opacity-100;
+}
+
+/* Estilos para los badges */
+.badge {
+  @apply transition-all duration-300;
+  background: linear-gradient(135deg, hsl(var(--primary)/0.2) 0%, hsl(var(--secondary)/0.2) 100%);
+}
+
+.badge:hover {
+  background: linear-gradient(135deg, hsl(var(--primary)/0.3) 0%, hsl(var(--secondary)/0.3) 100%);
+}
+
+/* Animaciones para los elementos de carga */
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-gradient {
+  background: linear-gradient(270deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--primary)));
+  background-size: 200% 200%;
+  animation: gradient 6s ease infinite;
+}
+
+/* Estilos para los tabs */
+.tabs {
+  @apply relative overflow-hidden rounded-lg;
+  background: linear-gradient(135deg, hsl(var(--muted)/0.5) 0%, hsl(var(--muted)) 100%);
+}
+
+.tab {
+  @apply transition-all duration-300;
+}
+
+.tab[data-state="active"] {
+  background: linear-gradient(135deg, hsl(var(--primary)/0.1) 0%, hsl(var(--secondary)/0.1) 100%);
+}
+
+/* Estilos para inputs y forms */
+.input {
+  @apply transition-all duration-300;
+  background: linear-gradient(135deg, hsl(var(--input)/0.5) 0%, hsl(var(--input)) 100%);
+}
+
+.input:focus {
+  @apply ring-2 ring-offset-2;
+  ring-color: hsl(var(--ring));
 }
 

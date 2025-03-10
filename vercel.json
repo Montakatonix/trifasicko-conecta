@@ -1,39 +1,51 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
+  "buildCommand": "next build",
+  "devCommand": "next dev",
   "installCommand": "npm install",
-  "public": false,
-  "git": {
-    "deploymentEnabled": {
-      "main": true
+  "framework": "nextjs",
+  "builds": [
+    {
+      "src": "next.config.js",
+      "use": "@vercel/next"
     }
-  },
+  ],
   "env": {
-    "NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyDHgzPBgwrFppQcHXN6mFoKYdv3q1YuRFY",
-    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "trifasicoconectaweb.firebaseapp.com",
-    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "trifasicoconectaweb",
-    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "trifasicoconectaweb.firebasestorage.app",
-    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "607386841601",
-    "NEXT_PUBLIC_FIREBASE_APP_ID": "1:607386841601:web:da540e195fb7ac8c31c600",
-    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-NRF2LN4CL8"
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "@next_public_firebase_api_key",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "@next_public_firebase_auth_domain",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "@next_public_firebase_project_id",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "@next_public_firebase_storage_bucket",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "@next_public_firebase_messaging_sender_id",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "@next_public_firebase_app_id",
+    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "@next_public_firebase_measurement_id"
   },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
         {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://*.firebaseapp.com https://*.firebase.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.firebase.com blob:; connect-src 'self' https://*.firebase.com https://*.firebaseio.com https://*.firebaseapp.com https://api.esios.ree.es https://newsapi.org wss://*.firebaseio.com; frame-src 'self' https://*.firebaseapp.com https://trifasicko-conecta.vercel.app;"
+        },
+        {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
         },
         {
           "key": "X-Frame-Options",
-          "value": "DENY"
+          "value": "SAMEORIGIN"
         },
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
         }
       ]
     }
