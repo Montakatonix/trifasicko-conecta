@@ -1,169 +1,183 @@
 'use client'
 
 import { useState } from 'react'
-
-import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { LoadingSpinner } from '@/components/ui/loading'
+import { ErrorMessage } from '@/components/ui/error'
+import { Mail, Phone, MapPin } from 'lucide-react'
 
-const formSchema = z.object({
-  nombre: z.string().min(2, {
-    message: 'El nombre debe tener al menos 2 caracteres.',
-  }),
-  email: z.string().email({
-    message: 'Por favor, introduce un email válido.',
-  }),
-  asunto: z.string().min(5, {
-    message: 'El asunto debe tener al menos 5 caracteres.',
-  }),
-  mensaje: z.string().min(10, {
-    message: 'El mensaje debe tener al menos 10 caracteres.',
-  }),
-})
+interface FormData {
+  nombre: string
+  email: string
+  telefono: string
+  mensaje: string
+}
 
-export default function ContactoPage() {
+export default function Contacto() {
+  const [formData, setFormData] = useState<FormData>({
+    nombre: '',
+    email: '',
+    telefono: '',
+    mensaje: '',
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      nombre: '',
-      email: '',
-      asunto: '',
-      mensaje: '',
-    },
-  })
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     setLoading(true)
     setError(null)
     setSuccess(false)
 
-    try {
-      // Aquí iría la lógica para enviar el formulario, por ejemplo, a una API
-      // Por ahora, simularemos un envío exitoso después de un breve retraso
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+    // Validación básica
+    if (!formData.nombre || !formData.email || !formData.mensaje) {
+      setError('Por favor, rellena todos los campos obligatorios')
+      setLoading(false)
+      return
+    }
 
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError('Por favor, introduce un email válido')
+      setLoading(false)
+      return
+    }
+
+    try {
+      // Simular envío del formulario
+      await new Promise((resolve) => setTimeout(resolve, 1000))
       setSuccess(true)
-      form.reset()
+      setFormData({
+        nombre: '',
+        email: '',
+        telefono: '',
+        mensaje: '',
+      })
     } catch (err) {
-      setError('Hubo un error al enviar el mensaje. Por favor, inténtalo de nuevo.')
+      setError('Ha ocurrido un error al enviar el mensaje. Por favor, inténtalo de nuevo.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className='container py-12'>
-      <div className='max-w-2xl mx-auto'>
-        <h1 className='text-3xl font-bold mb-6'>Contacto</h1>
-        <p className='text-muted-foreground mb-8'>
-          ¿Tienes alguna pregunta o sugerencia? No dudes en contactarnos. Estaremos encantados de
-          ayudarte.
+    <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold">Contacto</h1>
+        <p className="mt-2 text-lg text-muted-foreground">
+          ¿Tienes alguna pregunta? Estamos aquí para ayudarte
         </p>
+      </div>
 
-        {error && (
-          <Alert variant='destructive' className='mb-6'>
-            <AlertCircle className='h-4 w-4' />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      <div className="grid gap-8 md:grid-cols-2">
+        <div>
+          <div className="mb-6">
+            <h2 className="mb-4 text-2xl font-semibold">Información de contacto</h2>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Mail className="h-5 w-5 text-primary" />
+                <span>info@trifasickoconecta.es</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Phone className="h-5 w-5 text-primary" />
+                <span>900 123 456</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPin className="h-5 w-5 text-primary" />
+                <span>Calle Principal 123, 28001 Madrid</span>
+              </div>
+            </div>
+          </div>
 
-        {success && (
-          <Alert className='mb-6 bg-green-50 border-green-200'>
-            <CheckCircle className='h-4 w-4 text-green-600' />
-            <AlertDescription className='text-green-600'>
-              Tu mensaje ha sido enviado correctamente. Nos pondremos en contacto contigo pronto.
-            </AlertDescription>
-          </Alert>
-        )}
+          <div>
+            <h2 className="mb-4 text-2xl font-semibold">Horario de atención</h2>
+            <p className="text-muted-foreground">
+              Lunes a Viernes: 9:00 - 18:00
+              <br />
+              Sábados: 10:00 - 14:00
+              <br />
+              Domingos y festivos: Cerrado
+            </p>
+          </div>
+        </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
-            <FormField
-              control={form.control}
-              name='nombre'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre</FormLabel>
-                  <FormControl>
-                    <Input placeholder='Tu nombre' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='email'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder='tu@email.com' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='asunto'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Asunto</FormLabel>
-                  <FormControl>
-                    <Input placeholder='Asunto de tu mensaje' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='mensaje'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Mensaje</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder='Escribe tu mensaje aquí'
-                      className='min-h-[150px]'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type='submit' disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                  Enviando...
-                </>
-              ) : (
-                'Enviar mensaje'
-              )}
+        <div className="rounded-lg border p-6">
+          <h2 className="mb-4 text-2xl font-semibold">Envíanos un mensaje</h2>
+          
+          {error && (
+            <div className="mb-4">
+              <ErrorMessage message={error} />
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 rounded-lg bg-green-100 p-4 text-green-700">
+              Mensaje enviado correctamente. Nos pondremos en contacto contigo pronto.
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="nombre">Nombre *</Label>
+              <Input
+                id="nombre"
+                value={formData.nombre}
+                onChange={(e) =>
+                  setFormData({ ...formData, nombre: e.target.value })
+                }
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                placeholder="tu@email.com"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="telefono">Teléfono</Label>
+              <Input
+                id="telefono"
+                type="tel"
+                value={formData.telefono}
+                onChange={(e) =>
+                  setFormData({ ...formData, telefono: e.target.value })
+                }
+                placeholder="Tu teléfono (opcional)"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="mensaje">Mensaje *</Label>
+              <textarea
+                id="mensaje"
+                value={formData.mensaje}
+                onChange={(e) =>
+                  setFormData({ ...formData, mensaje: e.target.value })
+                }
+                placeholder="¿En qué podemos ayudarte?"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                rows={4}
+              />
+            </div>
+
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? <LoadingSpinner /> : 'Enviar mensaje'}
             </Button>
           </form>
-        </Form>
+        </div>
       </div>
     </div>
   )

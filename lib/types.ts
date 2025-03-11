@@ -3,31 +3,24 @@ export interface TarifaLuz {
   id: string
   comercializadora: string
   nombre: string
-  tipo: 'fijo' | 'indexado'
-  precioKWh?: number
-  precioKwhPunta?: number
-  precioKwhValle?: number
   potenciaContratada: number
-  permanencia: number
-  caracteristicas: string[]
-  descuentos?: string[]
-  condiciones?: string[]
-  urlContratacion: string
-  logoUrl: string
-  compañia: string
+  precioKWh: number
+  precioPotencia: number
   descuento?: number
+  caracteristicas: string[]
+  tipo?: string
+  urlContratacion?: string
+  logoUrl?: string
+  compañia?: string
 }
 
 export interface ConsumoElectrico {
-  consumoMensual: number
-  potenciaContratada: number
-  discriminacionHoraria: boolean
-  horasValleDiarias: number
-  horasPuntaDiarias: number
   consumoPunta?: number
   consumoValle?: number
-  consumoLlano?: number
-  electrodomesticos: Electrodomestico[]
+  horasPunta?: number
+  horasValle?: number
+  consumoMensual?: number
+  potenciaContratada: number
 }
 
 export interface Electrodomestico {
@@ -43,24 +36,24 @@ export interface TarifaInternet {
   id: string
   operador: string
   nombre: string
+  tipo: string
   velocidadBajada: number
   velocidadSubida: number
-  tipo: 'fibra' | 'adsl' | 'movil'
   precio: number
   permanencia: number
-  caracteristicas: string[]
-  extras?: string[]
-  urlContratacion: string
-  logoUrl: string
   cobertura: string[]
+  caracteristicas: string[]
+  urlContratacion?: string
+  logoUrl?: string
 }
 
 export interface FiltrosInternet {
   velocidadMinima: number
-  tipoConexion: 'fibra' | 'adsl' | 'movil'
+  tipoConexion: string
   precioMaximo: number
   sinPermanencia: boolean
-  codigoPostal: string
+  incluyeMovil: boolean
+  incluyeTV: boolean
 }
 
 // Tipos para reseñas y valoraciones
@@ -293,4 +286,31 @@ export interface SecurityCoverage {
     distance: number
   }[]
   estimatedInstallationTime: string
+}
+
+export interface FiltrosLuz {
+  potenciaMinima: number
+  potenciaMaxima: number
+  precioMaximoKWh: number
+  discriminacionHoraria: boolean
+  sinPermanencia: boolean
+}
+
+export interface ConsumoInternet {
+  velocidadMinima: number
+  tipoConexion: string
+  codigoPostal: string
+}
+
+export interface Ahorro {
+  ahorroAnual: number
+  mejorTarifaLuz?: TarifaLuz
+  mejorTarifaInternet?: TarifaInternet
+}
+
+export interface FormularioContacto {
+  nombre: string
+  email: string
+  telefono?: string
+  mensaje: string
 }

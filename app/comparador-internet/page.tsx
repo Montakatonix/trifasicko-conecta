@@ -1,369 +1,270 @@
 'use client'
 
 import { useState } from 'react'
-
-import Image from 'next/image'
-
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
-import { CheckCircle, Info, Loader2 } from 'lucide-react'
-
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { LoadingSpinner } from '@/components/ui/loading'
+import { ErrorMessage } from '@/components/ui/error'
+import { Badge } from '@/components/ui/badge'
+import { Wifi, Info, Check, X } from 'lucide-react'
+import { formatearPrecio, validarCodigoPostal } from '@/lib/utils'
+import type { TarifaInternet } from '@/lib/types'
 
-import { useAuth } from '@/lib/auth'
-import { getInitializedDb } from '@/lib/firebase'
-import type { FiltrosInternet, TarifaInternet } from '@/lib/types'
-import {
-  filtrarTarifasInternet,
-  formatearPrecio,
-  ordenarTarifasPorPrecio,
-  validarCodigoPostal,
-} from '@/lib/utils'
+interface FormData {
+  codigoPostal: string
+  velocidadMinima: number
+  tipoConexion: string
+  precioMaximo: number
+  sinPermanencia: boolean
+}
 
-export default function ComparadorInternetPage() {
-  const { user } = useAuth()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('requisitos')
-  const [resultados, setResultados] = useState<TarifaInternet[]>([])
+const tarifasDisponibles: TarifaInternet[] = [
+  {
+    id: '1',
+    operador: 'FibraMax',
+    nombre: 'Fibra 600Mb',
+    tipo: 'fibra',
+    velocidadBajada: 600,
+    velocidadSubida: 600,
+    precio: 39.90,
+    permanencia: 12,
+    cobertura: ['28001', '28002', '28003'],
+    caracteristicas: ['Router WiFi 6', 'Llamadas ilimitadas', 'Instalación gratuita'],
+    urlContratacion: 'https://fibramax.com',
+    logoUrl: '/logos/fibramax.png'
+  },
+  {
+    id: '2',
+    operador: 'TeleRapid',
+    nombre: 'Fibra + Móvil',
+    tipo: 'fibra',
+    velocidadBajada: 1000,
+    velocidadSubida: 1000,
+    precio: 49.90,
+    permanencia: 0,
+    cobertura: ['28001', '28002', '28003', '28004'],
+    caracteristicas: ['1000Mb simétricos', '2 líneas móviles', 'TV incluida'],
+    urlContratacion: 'https://telerapid.com',
+    logoUrl: '/logos/telerapid.png'
+  },
+  // Añadir más tarifas...
+]
 
-  const [filtros, setFiltros] = useState<FiltrosInternet>({
+export default function ComparadorInternet() {
+  const [formData, setFormData] = useState<FormData>({
+    codigoPostal: '',
     velocidadMinima: 100,
     tipoConexion: 'fibra',
     precioMaximo: 100,
-    sinPermanencia: false,
-    codigoPostal: '',
+    sinPermanencia: false
   })
-
-  const handleFiltrosChange = (field: keyof FiltrosInternet, value: any) => {
-    setFiltros((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
-  }
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [resultados, setResultados] = useState<TarifaInternet[]>([])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-
-    // Validaciones
-    if (!filtros.codigoPostal) {
-      setError('Por favor, introduce tu código postal')
-      return
-    }
-
-    if (!validarCodigoPostal(filtros.codigoPostal)) {
-      setError('El código postal no es válido')
-      return
-    }
+    setLoading(true)
 
     try {
-      setLoading(true)
-
-      // Aquí iría la llamada a la API para obtener tarifas
-      // Por ahora usamos datos de ejemplo
-      const tarifasEjemplo: TarifaInternet[] = [
-        {
-          id: '1',
-          operador: 'Movistar',
-          nombre: 'Fibra 1000Mb',
-          velocidadBajada: 1000,
-          velocidadSubida: 1000,
-          tipo: 'fibra',
-          precio: 39.9,
-          permanencia: 12,
-          caracteristicas: ['Router WiFi 6', 'Instalación gratuita', 'Línea fija incluida'],
-          extras: ['TV con deco 4K', 'Apps premium'],
-          urlContratacion: 'https://movistar.es',
-          logoUrl: '/logos/movistar.png',
-          cobertura: ['28001', '28002', '28003'],
-        },
-        {
-          id: '2',
-          operador: 'Orange',
-          nombre: 'Love Fibra 500Mb',
-          velocidadBajada: 500,
-          velocidadSubida: 500,
-          tipo: 'fibra',
-          precio: 34.95,
-          permanencia: 0,
-          caracteristicas: ['Sin permanencia', 'Router última generación', 'Llamadas ilimitadas'],
-          urlContratacion: 'https://orange.es',
-          logoUrl: '/logos/orange.png',
-          cobertura: ['28001', '28002', '28003'],
-        },
-      ]
-
-      // Filtrar y ordenar resultados
-      const tarifasFiltradas = filtrarTarifasInternet(tarifasEjemplo, filtros)
-      const tarifasOrdenadas = ordenarTarifasPorPrecio(tarifasFiltradas)
-
-      // Guardar la búsqueda si el usuario está autenticado
-      if (user) {
-        const db = await getInitializedDb()
-        await addDoc(collection(db, 'comparaciones'), {
-          userId: user.uid,
-          tipo: 'internet',
-          filtros,
-          createdAt: serverTimestamp(),
-        })
+      // Validar código postal
+      if (!validarCodigoPostal(formData.codigoPostal)) {
+        throw new Error('El código postal no es válido')
       }
 
-      setResultados(tarifasOrdenadas)
-      setActiveTab('resultados')
-    } catch (error) {
-      setError('Error al obtener las tarifas. Por favor, inténtalo de nuevo.')
-      console.error(error)
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      // Filtrar y ordenar tarifas según criterios
+      const tarifasFiltradas = tarifasDisponibles
+        .filter(tarifa => {
+          return (
+            tarifa.cobertura.includes(formData.codigoPostal) &&
+            tarifa.velocidadBajada >= formData.velocidadMinima &&
+            tarifa.tipo === formData.tipoConexion &&
+            tarifa.precio <= formData.precioMaximo &&
+            (!formData.sinPermanencia || tarifa.permanencia === 0)
+          )
+        })
+        .sort((a, b) => a.precio - b.precio)
+
+      setResultados(tarifasFiltradas)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ha ocurrido un error')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className='container mx-auto px-4 py-8'>
-      <h1 className='text-4xl font-bold mb-6'>Comparador de Tarifas de Internet</h1>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value='requisitos'>1. Tus Requisitos</TabsTrigger>
-          <TabsTrigger value='resultados' disabled={resultados.length === 0}>
-            2. Resultados
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value='requisitos'>
-          <Card>
-            <CardHeader>
-              <CardTitle>¿Qué tipo de conexión necesitas?</CardTitle>
-              <CardDescription>
-                Cuéntanos tus necesidades para encontrar la mejor tarifa
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className='space-y-6'>
-                <div className='space-y-4'>
-                  <div>
-                    <Label>Código Postal</Label>
-                    <Input
-                      type='text'
-                      maxLength={5}
-                      value={filtros.codigoPostal}
-                      onChange={(e) => handleFiltrosChange('codigoPostal', e.target.value)}
-                      placeholder='28001'
-                      disabled={loading}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Velocidad mínima (Mb)</Label>
-                    <Select
-                      value={String(filtros.velocidadMinima)}
-                      onValueChange={(value) =>
-                        handleFiltrosChange('velocidadMinima', Number(value))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='100'>100 Mb</SelectItem>
-                        <SelectItem value='300'>300 Mb</SelectItem>
-                        <SelectItem value='500'>500 Mb</SelectItem>
-                        <SelectItem value='1000'>1 Gb</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Tipo de conexión</Label>
-                    <Select
-                      value={filtros.tipoConexion}
-                      onValueChange={(value) =>
-                        handleFiltrosChange('tipoConexion', value as 'fibra' | 'adsl' | 'movil')
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='fibra'>Fibra Óptica</SelectItem>
-                        <SelectItem value='adsl'>ADSL</SelectItem>
-                        <SelectItem value='movil'>Internet Móvil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Precio máximo mensual</Label>
-                    <div className='flex items-center space-x-4'>
-                      <Slider
-                        value={[filtros.precioMaximo]}
-                        onValueChange={([value]) => handleFiltrosChange('precioMaximo', value)}
-                        max={150}
-                        step={5}
-                        className='flex-1'
-                      />
-                      <span className='w-16 text-right'>{filtros.precioMaximo}€</span>
-                    </div>
-                  </div>
-
-                  <div className='flex items-center space-x-2'>
-                    <Switch
-                      checked={filtros.sinPermanencia}
-                      onCheckedChange={(checked) => handleFiltrosChange('sinPermanencia', checked)}
-                    />
-                    <Label>Solo ofertas sin permanencia</Label>
-                  </div>
-
-                  {error && (
-                    <Alert variant='destructive'>
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-
-                  <Button type='submit' className='w-full' disabled={loading}>
-                    {loading ? (
-                      <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                        Buscando tarifas...
-                      </>
-                    ) : (
-                      'Buscar tarifas'
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value='resultados'>
-          <div className='space-y-6'>
-            {resultados.length === 0 ? (
-              <Alert>
-                <Info className='h-4 w-4' />
-                <AlertDescription>
-                  No se encontraron tarifas que coincidan con tus criterios. Prueba a ajustar los
-                  filtros.
-                </AlertDescription>
-              </Alert>
-            ) : (
-              resultados.map((tarifa) => (
-                <Card key={tarifa.id}>
-                  <CardHeader>
-                    <div className='flex items-center justify-between'>
-                      <div>
-                        <CardTitle>
-                          {tarifa.operador} - {tarifa.nombre}
-                        </CardTitle>
-                        <CardDescription>
-                          <div>
-                            <CardTitle className='text-lg font-semibold'>
-                              {tarifa.velocidadBajada}Mb ↓ {tarifa.velocidadSubida}Mb ↑
-                            </CardTitle>
-                          </div>
-                          <Image
-                            src={tarifa.logoUrl}
-                            alt={tarifa.operador}
-                            width={120}
-                            height={48}
-                            className='h-12 w-auto object-contain'
-                          />
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-                      <div>
-                        <h4 className='font-semibold mb-2'>Características</h4>
-                        <ul className='space-y-2'>
-                          {tarifa.caracteristicas.map((caracteristica, index) => (
-                            <li key={index} className='flex items-center'>
-                              <CheckCircle className='h-4 w-4 mr-2 text-green-500' />
-                              {caracteristica}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      {tarifa.extras && (
-                        <div>
-                          <h4 className='font-semibold mb-2'>Extras incluidos</h4>
-                          <ul className='space-y-2'>
-                            {tarifa.extras.map((extra, index) => (
-                              <li key={index} className='flex items-center'>
-                                <CheckCircle className='h-4 w-4 mr-2 text-blue-500' />
-                                {extra}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className='mt-6'>
-                      <h4 className='font-semibold mb-2'>Precio mensual</h4>
-                      <div className='text-2xl font-bold text-primary'>
-                        {formatearPrecio(tarifa.precio)}
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter className='flex justify-between'>
-                    <p className='text-sm text-muted-foreground'>
-                      {tarifa.permanencia > 0
-                        ? `Permanencia: ${tarifa.permanencia} meses`
-                        : 'Sin permanencia'}
-                    </p>
-                    <Button asChild>
-                      <a href={tarifa.urlContratacion} target='_blank' rel='noopener noreferrer'>
-                        Contratar
-                      </a>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))
-            )}
-
-            <div className='flex justify-center mt-8'>
-              <Button variant='outline' onClick={() => setActiveTab('requisitos')}>
-                Nueva comparación
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <div className='flex items-center justify-center'>
-        <Image
-          src='/images/comparador-internet.webp'
-          alt='Comparador de Internet'
-          width={800}
-          height={400}
-          className='rounded-lg shadow-lg'
-          priority
-        />
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold">Comparador de Internet</h1>
+        <p className="mt-2 text-lg text-muted-foreground">
+          Encuentra la mejor tarifa de fibra y móvil para tu hogar
+        </p>
       </div>
+
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Buscar ofertas</CardTitle>
+          <CardDescription>
+            Introduce tus preferencias para encontrar las mejores tarifas disponibles en tu zona
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="codigo-postal">Código postal</Label>
+              <Input
+                id="codigo-postal"
+                placeholder="28001"
+                value={formData.codigoPostal}
+                onChange={e => setFormData({ ...formData, codigoPostal: e.target.value })}
+              />
+              <p className="text-sm text-muted-foreground">
+                Necesitamos tu código postal para mostrar las ofertas disponibles en tu zona
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Tipo de conexión</Label>
+              <RadioGroup
+                value={formData.tipoConexion}
+                onValueChange={value => setFormData({ ...formData, tipoConexion: value })}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="fibra" id="fibra" />
+                  <Label htmlFor="fibra">Fibra</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="adsl" id="adsl" />
+                  <Label htmlFor="adsl">ADSL</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="velocidad">Velocidad mínima (Mb)</Label>
+              <Input
+                id="velocidad"
+                type="number"
+                min="0"
+                step="50"
+                value={formData.velocidadMinima}
+                onChange={e => setFormData({ ...formData, velocidadMinima: parseInt(e.target.value) })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="precio">Precio máximo (€)</Label>
+              <Input
+                id="precio"
+                type="number"
+                min="0"
+                step="5"
+                value={formData.precioMaximo}
+                onChange={e => setFormData({ ...formData, precioMaximo: parseInt(e.target.value) })}
+              />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <RadioGroup
+                value={formData.sinPermanencia ? 'si' : 'no'}
+                onValueChange={value => setFormData({ ...formData, sinPermanencia: value === 'si' })}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="con-permanencia" />
+                  <Label htmlFor="con-permanencia">Con permanencia</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="si" id="sin-permanencia" />
+                  <Label htmlFor="sin-permanencia">Sin permanencia</Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <LoadingSpinner className="mr-2" /> : <Wifi className="mr-2 h-4 w-4" />}
+              Buscar ofertas
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {error && <ErrorMessage message={error} />}
+
+      {resultados.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold">Resultados</h2>
+          {resultados.map(tarifa => (
+            <Card key={tarifa.id} className="overflow-hidden">
+              <CardHeader className="border-b bg-muted/50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{tarifa.operador}</CardTitle>
+                    <CardDescription>{tarifa.nombre}</CardDescription>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">
+                      {formatearPrecio(tarifa.precio)}
+                      <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                    </div>
+                    {tarifa.permanencia === 0 && (
+                      <Badge variant="secondary" className="mt-1">
+                        Sin permanencia
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="grid gap-6 p-6 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Detalles de la tarifa</h4>
+                  <ul className="grid gap-2 text-sm">
+                    <li className="flex items-center gap-2">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      Velocidad: {tarifa.velocidadBajada}Mb/{tarifa.velocidadSubida}Mb
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                      Tipo: {tarifa.tipo.toUpperCase()}
+                    </li>
+                    <li className="flex items-center gap-2">
+                      {tarifa.permanencia > 0 ? (
+                        <>
+                          <X className="h-4 w-4 text-destructive" />
+                          Permanencia de {tarifa.permanencia} meses
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 text-primary" />
+                          Sin permanencia
+                        </>
+                      )}
+                    </li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <h4 className="font-medium">Características</h4>
+                  <ul className="grid gap-2 text-sm">
+                    {tarifa.caracteristicas.map((caracteristica, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-primary" />
+                        {caracteristica}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

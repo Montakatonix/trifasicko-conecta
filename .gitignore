@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -11,12 +12,9 @@
 # next.js
 /.next/
 /out/
-.next
-next-env.d.ts
 
 # production
 /build
-/dist
 
 # misc
 .DS_Store
@@ -41,6 +39,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+next-env.d.ts
 
 # IDE
 .idea

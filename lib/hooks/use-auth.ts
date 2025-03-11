@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User } from 'firebase/auth'
+import { User, Auth } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 
@@ -17,8 +17,17 @@ export const useAuth = () => {
   })
 
   useEffect(() => {
+    if (!auth) {
+      setState({
+        user: null,
+        loading: false,
+        error: 'Firebase auth not initialized',
+      })
+      return
+    }
+
     const unsubscribe = onAuthStateChanged(
-      auth,
+      auth as Auth,
       (user) => {
         setState({
           user,

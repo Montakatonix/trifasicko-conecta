@@ -6,14 +6,32 @@
   "framework": "nextjs",
   "env": {
     "NODE_ENV": "production",
-    "NEXT_TELEMETRY_DISABLED": "1"
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NEXT_PUBLIC_FIREBASE_API_KEY": "@next_public_firebase_api_key",
+    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "@next_public_firebase_auth_domain",
+    "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "@next_public_firebase_project_id",
+    "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "@next_public_firebase_storage_bucket",
+    "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "@next_public_firebase_messaging_sender_id",
+    "NEXT_PUBLIC_FIREBASE_APP_ID": "@next_public_firebase_app_id",
+    "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "@next_public_firebase_measurement_id",
+    "NEXT_PUBLIC_ENABLE_ANALYTICS": "true",
+    "NEXT_PUBLIC_FIREBASE_TEST_MODE": "false"
   },
   "build": {
     "env": {
-      "NODE_VERSION": "18.x"
+      "NODE_VERSION": "18.x",
+      "NEXT_PUBLIC_FIREBASE_API_KEY": "@next_public_firebase_api_key",
+      "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "@next_public_firebase_auth_domain",
+      "NEXT_PUBLIC_FIREBASE_PROJECT_ID": "@next_public_firebase_project_id",
+      "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "@next_public_firebase_storage_bucket",
+      "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "@next_public_firebase_messaging_sender_id",
+      "NEXT_PUBLIC_FIREBASE_APP_ID": "@next_public_firebase_app_id",
+      "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "@next_public_firebase_measurement_id",
+      "NEXT_PUBLIC_ENABLE_ANALYTICS": "true",
+      "NEXT_PUBLIC_FIREBASE_TEST_MODE": "false"
     }
   },
-  "regions": ["cdg1"],
+  "regions": ["iad1"],
   "git": {
     "deploymentEnabled": {
       "main": true
@@ -40,8 +58,8 @@
           "value": "strict-origin-when-cross-origin"
         },
         {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.firebaseio.com https://*.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.googleapis.com https://*.gstatic.com https://*.firebasestorage.googleapis.com; media-src 'self' https://*.firebasestorage.googleapis.com; connect-src 'self' https://*.firebase.googleapis.com https://*.firebaseio.com https://*.firebasestorage.googleapis.com wss://*.firebaseio.com https://*.google-analytics.com https://*.analytics.google.com; frame-src 'self' https://*.firebaseapp.com"
         }
       ]
     },
@@ -81,5 +99,10 @@
     }
   ],
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "images": {
+    "domains": ["firebasestorage.googleapis.com"],
+    "sizes": [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    "minimumCacheTTL": 60
+  }
 }

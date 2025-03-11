@@ -1,95 +1,91 @@
 # Trifasicko Conecta
 
-Plataforma web para la comparación de tarifas de luz e internet, desarrollada con Next.js y Firebase.
+Trifasicko Conecta es una plataforma web que ayuda a los usuarios a encontrar las mejores tarifas de luz e internet. Compara ofertas de diferentes compañías y proporciona recomendaciones personalizadas basadas en el consumo y las necesidades específicas de cada usuario.
 
-## Características
+## Características principales
 
-- Comparador de tarifas de luz
-- Comparador de tarifas de internet
-- Calculadora de ahorro energético
-- Sistema de autenticación de usuarios
-- Panel de perfil personalizado
-- Notificaciones en tiempo real
-- Blog de noticias y actualizaciones
-- Sección de reseñas y testimonios
+- **Comparador de luz**: Analiza tarifas de las principales comercializadoras eléctricas
+- **Comparador de internet**: Compara ofertas de fibra, ADSL y tarifas móviles
+- **Calculadora de ahorro**: Estima el ahorro potencial al cambiar de tarifa
+- **Interfaz intuitiva**: Diseño moderno y fácil de usar
+- **Resultados personalizados**: Recomendaciones basadas en el perfil de consumo
+- **Sin costes**: Servicio completamente gratuito
 
-## Tecnologías
+## Tecnologías utilizadas
 
-- Next.js 15.1.0
-- React 19
-- Firebase (Auth, Firestore)
-- TypeScript
-- Tailwind CSS
-- Radix UI Components
-- ESLint
-- Prettier
+- [Next.js 14](https://nextjs.org/)
+- [React 18](https://reactjs.org/)
+- [TypeScript](https://www.typescriptlang.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Radix UI](https://www.radix-ui.com/)
+- [Lucide Icons](https://lucide.dev/)
 
-## Requisitos
+## Requisitos previos
 
-- Node.js >= 18.0.0
-- npm >= 9.0.0
+- Node.js 18.0.0 o superior
+- npm 8.0.0 o superior
 
 ## Instalación
 
-1. Clonar el repositorio:
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/tu-usuario/trifasicko-conecta.git
+   ```
 
-```bash
-git clone https://github.com/Montakatonix/trifasicko-conecta.git
-cd trifasicko-conecta
-```
+2. Instala las dependencias:
+   ```bash
+   cd trifasicko-conecta
+   npm install
+   ```
 
-2. Instalar dependencias:
+3. Crea un archivo `.env.local` con las variables de entorno necesarias:
+   ```
+   NEXT_PUBLIC_API_URL=tu_url_api
+   ```
 
-```bash
-npm install
-```
+4. Inicia el servidor de desarrollo:
+   ```bash
+   npm run dev
+   ```
 
-3. Configurar variables de entorno:
-   Crear un archivo `.env.local` con las siguientes variables:
+5. Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 
-```env
-NEXT_PUBLIC_FIREBASE_API_KEY=tu_api_key
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tu_auth_domain
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=tu_project_id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=tu_storage_bucket
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=tu_messaging_sender_id
-NEXT_PUBLIC_FIREBASE_APP_ID=tu_app_id
-NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=tu_measurement_id
-```
+## Scripts disponibles
 
-4. Iniciar el servidor de desarrollo:
+- `npm run dev`: Inicia el servidor de desarrollo
+- `npm run build`: Construye la aplicación para producción
+- `npm run start`: Inicia el servidor de producción
+- `npm run lint`: Ejecuta el linter
 
-```bash
-npm run dev
-```
-
-## Despliegue
-
-El proyecto está configurado para ser desplegado en Vercel. Solo necesitas:
-
-1. Conectar el repositorio con Vercel
-2. Configurar las variables de entorno en el dashboard de Vercel
-3. Desplegar
-
-## Estructura del Proyecto
+## Estructura del proyecto
 
 ```
-├── app/                 # Rutas y páginas de la aplicación
-├── components/         # Componentes reutilizables
-├── lib/               # Utilidades y configuraciones
-├── public/            # Archivos estáticos
-├── styles/            # Estilos globales
-└── types/             # Definiciones de tipos TypeScript
+trifasicko-conecta/
+├── app/                    # Páginas y rutas de la aplicación
+├── components/            # Componentes reutilizables
+│   ├── ui/               # Componentes de interfaz de usuario
+│   └── ...               # Otros componentes
+├── lib/                  # Utilidades y tipos
+├── public/              # Archivos estáticos
+└── ...
 ```
 
 ## Contribuir
 
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
+1. Haz un fork del proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Haz push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Este proyecto está bajo la Licencia MIT. Ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## Contacto
+
+Si tienes alguna pregunta o sugerencia, no dudes en contactarnos:
+
+- Email: info@trifasickoconecta.es
+- Teléfono: 900 123 456
+- Web: [https://trifasickoconecta.es](https://trifasickoconecta.es)

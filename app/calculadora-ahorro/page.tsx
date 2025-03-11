@@ -1,152 +1,324 @@
 'use client'
 
 import { useState } from 'react'
-
 import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Slider } from '@/components/ui/slider'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { LoadingSpinner } from '@/components/ui/loading'
+import { ErrorMessage } from '@/components/ui/error'
+import { Badge } from '@/components/ui/badge'
+import { Calculator, Info, Check, X } from 'lucide-react'
+import { calcularAhorroAnual, formatearPrecio } from '@/lib/utils'
 
-export default function CalculadoraAhorroPage() {
-  const [consumo, setConsumo] = useState(250)
-  const [potencia, setPotencia] = useState(4.6)
-  const [tipoTarifa, setTipoTarifa] = useState('PVPC')
-  const [horasValle, setHorasValle] = useState(8)
-  const [precioActual, setPrecioActual] = useState(0.14)
-  const [resultado, setResultado] = useState<number | null>(null)
+interface FormData {
+  gastoActualLuz: number
+  gastoActualInternet: number
+  incluyeLuz: boolean
+  incluyeInternet: boolean
+}
 
-  const calcularAhorro = () => {
-    // Este es un cálculo simplificado. En una implementación real, se usarían datos más precisos y fórmulas más complejas.
-    const consumoAnual = consumo * 12
-    const costoActual = consumoAnual * precioActual + potencia * 12 * 30 // Suponiendo un término de potencia de 30€/kW/año
+interface Ahorro {
+  ahorroLuz: number
+  ahorroInternet: number
+  ahorroTotal: number
+  mejorTarifaLuz: {
+    comercializadora: string
+    nombre: string
+    precio: number
+    caracteristicas: string[]
+  }
+  mejorTarifaInternet: {
+    operador: string
+    nombre: string
+    precio: number
+    caracteristicas: string[]
+  }
+}
 
-    let costoEstimado
-    if (tipoTarifa === 'PVPC') {
-      costoEstimado = consumoAnual * 0.12 + potencia * 12 * 28 // Suponiendo un precio medio de PVPC de 0.12€/kWh
-    } else {
-      const consumoValle = consumoAnual * (horasValle / 24)
-      const consumoPunta = consumoAnual - consumoValle
-      costoEstimado = consumoValle * 0.08 + consumoPunta * 0.16 + potencia * 12 * 28 // Precios ejemplo para tarifa con discriminación horaria
+export default function CalculadoraAhorro() {
+  const [formData, setFormData] = useState<FormData>({
+    gastoActualLuz: 0,
+    gastoActualInternet: 0,
+    incluyeLuz: true,
+    incluyeInternet: true,
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [resultado, setResultado] = useState<Ahorro | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    try {
+      // Validar datos
+      if (formData.incluyeLuz && formData.gastoActualLuz <= 0) {
+        throw new Error('El gasto actual de luz debe ser mayor que 0')
+      }
+      if (formData.incluyeInternet && formData.gastoActualInternet <= 0) {
+        throw new Error('El gasto actual de internet debe ser mayor que 0')
+      }
+
+      // Simular llamada a API
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      // Simular cálculo de ahorro
+      const mejorTarifaLuz = {
+        comercializadora: 'EnergíaVerde',
+        nombre: 'Tarifa Eco Plus',
+        precio: formData.gastoActualLuz * 0.85, // 15% menos
+        caracteristicas: [
+          '100% energía renovable',
+          'Sin permanencia',
+          'Factura electrónica',
+          'App de control',
+        ],
+      }
+
+      const mejorTarifaInternet = {
+        operador: 'FibraMax',
+        nombre: 'Fibra 600Mb',
+        precio: formData.gastoActualInternet * 0.8, // 20% menos
+        caracteristicas: [
+          'Fibra 600Mb simétricos',
+          'Router WiFi 6',
+          'Llamadas ilimitadas',
+          'Sin permanencia',
+        ],
+      }
+
+      const ahorroLuz = formData.incluyeLuz
+        ? calcularAhorroAnual(formData.gastoActualLuz, mejorTarifaLuz.precio)
+        : 0
+      const ahorroInternet = formData.incluyeInternet
+        ? calcularAhorroAnual(formData.gastoActualInternet, mejorTarifaInternet.precio)
+        : 0
+
+      setResultado({
+        ahorroLuz,
+        ahorroInternet,
+        ahorroTotal: ahorroLuz + ahorroInternet,
+        mejorTarifaLuz,
+        mejorTarifaInternet,
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ha ocurrido un error')
+    } finally {
+      setLoading(false)
     }
-
-    const ahorroAnual = costoActual - costoEstimado
-    setResultado(ahorroAnual)
   }
 
   return (
-    <div className='container py-12'>
-      <h1 className='text-3xl font-bold mb-6'>Calculadora de Ahorro</h1>
-      <Card>
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-8 text-center">
+        <h1 className="text-4xl font-bold">Calculadora de Ahorro</h1>
+        <p className="mt-2 text-lg text-muted-foreground">
+          Descubre cuánto puedes ahorrar en tus facturas mensuales
+        </p>
+      </div>
+
+      <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Introduce tus datos de consumo</CardTitle>
+          <CardTitle>Tus gastos actuales</CardTitle>
           <CardDescription>
-            Cuanto más precisos sean los datos, más exacto será el cálculo del ahorro potencial.
+            Introduce el importe mensual de tus facturas para calcular tu ahorro potencial
           </CardDescription>
         </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='space-y-2'>
-            <Label htmlFor='consumo'>Consumo mensual (kWh)</Label>
-            <Slider
-              id='consumo'
-              min={50}
-              max={1000}
-              step={10}
-              value={[consumo]}
-              onValueChange={(value) => setConsumo(value[0])}
-            />
-            <div className='text-right text-sm text-muted-foreground'>{consumo} kWh</div>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='potencia'>Potencia contratada (kW)</Label>
-            <Select
-              value={potencia.toString()}
-              onValueChange={(value) => setPotencia(Number.parseFloat(value))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder='Selecciona la potencia' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='3.45'>3.45 kW</SelectItem>
-                <SelectItem value='4.6'>4.6 kW</SelectItem>
-                <SelectItem value='5.75'>5.75 kW</SelectItem>
-                <SelectItem value='6.9'>6.9 kW</SelectItem>
-                <SelectItem value='8.05'>8.05 kW</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className='space-y-2'>
-            <Label htmlFor='tipoTarifa'>Tipo de tarifa</Label>
-            <Select value={tipoTarifa} onValueChange={setTipoTarifa}>
-              <SelectTrigger>
-                <SelectValue placeholder='Selecciona el tipo de tarifa' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='PVPC'>PVPC</SelectItem>
-                <SelectItem value='Discriminacion'>Con discriminación horaria</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          {tipoTarifa === 'Discriminacion' && (
-            <div className='space-y-2'>
-              <Label htmlFor='horasValle'>Horas valle al día</Label>
-              <Slider
-                id='horasValle'
-                min={0}
-                max={24}
-                step={1}
-                value={[horasValle]}
-                onValueChange={(value) => setHorasValle(value[0])}
-              />
-              <div className='text-right text-sm text-muted-foreground'>{horasValle} horas</div>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <RadioGroup
+                  value={formData.incluyeLuz ? 'si' : 'no'}
+                  onValueChange={value =>
+                    setFormData({ ...formData, incluyeLuz: value === 'si' })
+                  }
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="incluye-luz" />
+                    <Label htmlFor="incluye-luz">Incluir factura de luz</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="no-incluye-luz" />
+                    <Label htmlFor="no-incluye-luz">No incluir luz</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {formData.incluyeLuz && (
+                <div className="space-y-2">
+                  <Label htmlFor="gasto-luz">Gasto mensual en luz (€)</Label>
+                  <Input
+                    id="gasto-luz"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.gastoActualLuz || ''}
+                    onChange={e =>
+                      setFormData({ ...formData, gastoActualLuz: parseFloat(e.target.value) })
+                    }
+                  />
+                </div>
+              )}
+
+              <div className="flex items-center space-x-2">
+                <RadioGroup
+                  value={formData.incluyeInternet ? 'si' : 'no'}
+                  onValueChange={value =>
+                    setFormData({ ...formData, incluyeInternet: value === 'si' })
+                  }
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="si" id="incluye-internet" />
+                    <Label htmlFor="incluye-internet">Incluir factura de internet</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="no-incluye-internet" />
+                    <Label htmlFor="no-incluye-internet">No incluir internet</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              {formData.incluyeInternet && (
+                <div className="space-y-2">
+                  <Label htmlFor="gasto-internet">Gasto mensual en internet (€)</Label>
+                  <Input
+                    id="gasto-internet"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.gastoActualInternet || ''}
+                    onChange={e =>
+                      setFormData({ ...formData, gastoActualInternet: parseFloat(e.target.value) })
+                    }
+                  />
+                </div>
+              )}
             </div>
-          )}
-          <div className='space-y-2'>
-            <Label htmlFor='precioActual'>Precio actual por kWh (€)</Label>
-            <Input
-              id='precioActual'
-              type='number'
-              step='0.01'
-              value={precioActual}
-              onChange={(e) => setPrecioActual(Number.parseFloat(e.target.value))}
-            />
-          </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <LoadingSpinner className="mr-2" /> : <Calculator className="mr-2 h-4 w-4" />}
+              Calcular ahorro
+            </Button>
+          </form>
         </CardContent>
-        <CardFooter>
-          <Button onClick={calcularAhorro} className='w-full'>
-            Calcular Ahorro
-          </Button>
-        </CardFooter>
       </Card>
-      {resultado !== null && (
-        <Card className='mt-6'>
-          <CardHeader>
-            <CardTitle>Resultado del cálculo</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className='text-2xl font-bold text-green-600'>
-              Ahorro anual estimado: {resultado.toFixed(2)}€
-            </p>
-            <p className='text-sm text-muted-foreground mt-2'>
-              Este es un cálculo aproximado basado en los datos proporcionados y las tarifas
-              promedio del mercado. El ahorro real puede variar dependiendo de diversos factores.
-            </p>
-          </CardContent>
-        </Card>
+
+      {error && <ErrorMessage message={error} />}
+
+      {resultado && (
+        <div className="space-y-6">
+          <Card className="bg-primary/5">
+            <CardHeader>
+              <CardTitle>Tu ahorro potencial</CardTitle>
+              <CardDescription>
+                Basado en las mejores tarifas disponibles actualmente
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {resultado.ahorroLuz > 0 && (
+                  <div className="space-y-2 rounded-lg bg-background p-4">
+                    <h4 className="font-medium">Ahorro en luz</h4>
+                    <div className="text-2xl font-bold text-primary">
+                      {formatearPrecio(resultado.ahorroLuz)}
+                      <span className="text-sm font-normal text-muted-foreground">/año</span>
+                    </div>
+                  </div>
+                )}
+                {resultado.ahorroInternet > 0 && (
+                  <div className="space-y-2 rounded-lg bg-background p-4">
+                    <h4 className="font-medium">Ahorro en internet</h4>
+                    <div className="text-2xl font-bold text-primary">
+                      {formatearPrecio(resultado.ahorroInternet)}
+                      <span className="text-sm font-normal text-muted-foreground">/año</span>
+                    </div>
+                  </div>
+                )}
+                <div className="space-y-2 rounded-lg bg-background p-4">
+                  <h4 className="font-medium">Ahorro total</h4>
+                  <div className="text-2xl font-bold text-primary">
+                    {formatearPrecio(resultado.ahorroTotal)}
+                    <span className="text-sm font-normal text-muted-foreground">/año</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {resultado.ahorroLuz > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{resultado.mejorTarifaLuz.comercializadora}</CardTitle>
+                    <CardDescription>{resultado.mejorTarifaLuz.nombre}</CardDescription>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">
+                      {formatearPrecio(resultado.mejorTarifaLuz.precio)}
+                      <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                    </div>
+                    <Badge variant="secondary" className="mt-1">
+                      Mejor tarifa de luz
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <h4 className="font-medium">Características</h4>
+                  <ul className="grid gap-2 text-sm">
+                    {resultado.mejorTarifaLuz.caracteristicas.map((caracteristica, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-primary" />
+                        {caracteristica}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {resultado.ahorroInternet > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>{resultado.mejorTarifaInternet.operador}</CardTitle>
+                    <CardDescription>{resultado.mejorTarifaInternet.nombre}</CardDescription>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-2xl font-bold text-primary">
+                      {formatearPrecio(resultado.mejorTarifaInternet.precio)}
+                      <span className="text-sm font-normal text-muted-foreground">/mes</span>
+                    </div>
+                    <Badge variant="secondary" className="mt-1">
+                      Mejor tarifa de internet
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <h4 className="font-medium">Características</h4>
+                  <ul className="grid gap-2 text-sm">
+                    {resultado.mejorTarifaInternet.caracteristicas.map((caracteristica, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <Check className="h-4 w-4 text-primary" />
+                        {caracteristica}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   )
