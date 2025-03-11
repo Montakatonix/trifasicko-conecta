@@ -21,20 +21,20 @@ const rateLimitConfigs: Record<string, RateLimitConfig> = {
     windowMs: 60 * 1000, // 1 minuto
     max: 60, // límite de solicitudes por ventana
     message: 'Too Many Requests',
-    statusCode: 429
+    statusCode: 429,
   },
   '/api': {
     windowMs: 60 * 1000,
     max: 30,
     message: 'API rate limit exceeded',
-    statusCode: 429
+    statusCode: 429,
   },
   '/auth': {
     windowMs: 15 * 60 * 1000, // 15 minutos
     max: 5,
     message: 'Authentication rate limit exceeded',
-    statusCode: 429
-  }
+    statusCode: 429,
+  },
 }
 
 // Almacén en memoria para rate limiting
@@ -45,11 +45,13 @@ function cleanupRateLimitStore() {
   const now = Date.now()
   Array.from(rateLimitStore.entries()).forEach(([key, value]) => {
     // Limpiar entradas antiguas
-    if (now - value.timestamp > 24 * 60 * 60 * 1000) { // 24 horas
+    if (now - value.timestamp > 24 * 60 * 60 * 1000) {
+      // 24 horas
       rateLimitStore.delete(key)
     }
     // Desbloquear IPs después de un período
-    else if (value.blocked && now - (value.lastViolation || 0) > 60 * 60 * 1000) { // 1 hora
+    else if (value.blocked && now - (value.lastViolation || 0) > 60 * 60 * 1000) {
+      // 1 hora
       value.blocked = false
       value.count = 0
     }
@@ -64,7 +66,7 @@ if (typeof setInterval !== 'undefined') {
 function getRateLimitConfig(path: string): RateLimitConfig {
   // Encontrar la configuración más específica que coincida con la ruta
   const matchingPath = Object.keys(rateLimitConfigs)
-    .filter(p => path.startsWith(p))
+    .filter((p) => path.startsWith(p))
     .sort((a, b) => b.length - a.length)[0]
 
   return rateLimitConfigs[matchingPath] || rateLimitConfigs.default
@@ -85,11 +87,11 @@ export async function middleware(request: NextRequest) {
     const clientId = getClientIdentifier(request)
     const path = request.nextUrl.pathname
     const config = getRateLimitConfig(path)
-    
+
     // Rate Limiting
     const now = Date.now()
     const store = rateLimitStore.get(clientId) || { count: 0, timestamp: now }
-    
+
     // Verificar si el cliente está bloqueado
     if (store.blocked) {
       return new NextResponse(config.message, {
@@ -106,15 +108,15 @@ export async function middleware(request: NextRequest) {
       store.count = 0
       store.timestamp = now
     }
-    
+
     store.count++
-    
+
     // Verificar límite de velocidad
     if (store.count > config.max) {
       store.blocked = true
       store.lastViolation = now
       rateLimitStore.set(clientId, store)
-      
+
       return new NextResponse(config.message, {
         status: config.statusCode,
         headers: {
@@ -132,7 +134,10 @@ export async function middleware(request: NextRequest) {
     // Headers de Rate Limit
     response.headers.set('X-RateLimit-Limit', config.max.toString())
     response.headers.set('X-RateLimit-Remaining', (config.max - store.count).toString())
-    response.headers.set('X-RateLimit-Reset', (Math.ceil(store.timestamp / 1000) + config.windowMs / 1000).toString())
+    response.headers.set(
+      'X-RateLimit-Reset',
+      (Math.ceil(store.timestamp / 1000) + config.windowMs / 1000).toString()
+    )
 
     // Headers de Seguridad Adicionales
     const securityHeaders = {
@@ -146,7 +151,7 @@ export async function middleware(request: NextRequest) {
       'Cross-Origin-Resource-Policy': 'same-origin',
       'Cross-Origin-Embedder-Policy': 'require-corp',
       'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
-      'Expect-CT': 'max-age=86400, enforce'
+      'Expect-CT': 'max-age=86400, enforce',
     }
 
     // Aplicar headers de seguridad
@@ -173,7 +178,7 @@ export async function middleware(request: NextRequest) {
           "frame-ancestors 'none'",
           "form-action 'self'",
           "base-uri 'self'",
-          "object-src 'none'"
+          "object-src 'none'",
         ].join('; ')
       )
     }
@@ -197,4 +202,4 @@ export const config = {
      */
     '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
-} 
+}

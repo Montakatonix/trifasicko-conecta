@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
+
 import { toast } from 'sonner'
 
-interface ErrorToastEvent {
-  detail: {
-    message: string
-    error: string
+interface ErrorToastDetail {
+  message: string
+  error: string
+}
+
+interface ErrorToastEvent extends CustomEvent {
+  detail: ErrorToastDetail
+}
+
+declare global {
+  interface WindowEventMap {
+    'show-error-toast': ErrorToastEvent
   }
 }
 
@@ -14,25 +23,25 @@ export function ErrorToast() {
   useEffect(() => {
     setIsClient(true)
 
-    const handleErrorToast = (event: CustomEvent<ErrorToastEvent['detail']>) => {
+    const handleErrorToast = (event: ErrorToastEvent) => {
       toast.error(event.detail.message, {
         description: event.detail.error,
         duration: 5000,
         action: {
           label: 'Reintentar',
-          onClick: () => window.location.reload()
-        }
+          onClick: () => window.location.reload(),
+        },
       })
     }
 
-    window.addEventListener('show-error-toast' as any, handleErrorToast as any)
+    window.addEventListener('show-error-toast', handleErrorToast)
 
     return () => {
-      window.removeEventListener('show-error-toast' as any, handleErrorToast as any)
+      window.removeEventListener('show-error-toast', handleErrorToast)
     }
   }, [])
 
   if (!isClient) return null
 
   return null
-} 
+}

@@ -1,16 +1,18 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import * as React from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
+
 import {
+  type User as FirebaseUser,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   updateProfile,
-  type User as FirebaseUser,
-} from "firebase/auth"
-import { auth } from "@/lib/firebase"
+} from 'firebase/auth'
+
+import { auth } from '@/lib/firebase'
 
 interface AuthContextType {
   user: FirebaseUser | null
@@ -37,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!auth) {
-      setError("Firebase Auth is not initialized")
+      setError('Firebase Auth is not initialized')
       setLoading(false)
       return
     }
@@ -50,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setError(null)
       },
       (error) => {
-        setError(error instanceof Error ? error.message : "Authentication error")
+        setError(error instanceof Error ? error.message : 'Authentication error')
         setLoading(false)
       }
     )
@@ -59,14 +61,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const handleAuthError = (error: unknown) => {
-    const message = error instanceof Error ? error.message : "Authentication error"
+    const message = error instanceof Error ? error.message : 'Authentication error'
     setError(message)
     throw error
   }
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      if (!auth) throw new Error("Firebase Auth is not initialized")
+      if (!auth) throw new Error('Firebase Auth is not initialized')
       setLoading(true)
       setError(null)
       const { user: newUser } = await createUserWithEmailAndPassword(auth, email, password)
@@ -81,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      if (!auth) throw new Error("Firebase Auth is not initialized")
+      if (!auth) throw new Error('Firebase Auth is not initialized')
       setLoading(true)
       setError(null)
       const { user: signedInUser } = await signInWithEmailAndPassword(auth, email, password)
@@ -95,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      if (!auth) throw new Error("Firebase Auth is not initialized")
+      if (!auth) throw new Error('Firebase Auth is not initialized')
       setLoading(true)
       setError(null)
       await firebaseSignOut(auth)
@@ -125,8 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
 }
-

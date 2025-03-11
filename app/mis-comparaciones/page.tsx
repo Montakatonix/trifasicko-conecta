@@ -1,15 +1,22 @@
-"use client"
+'use client'
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/auth"
-import { collection, getDocs, query, orderBy, deleteDoc, doc } from "firebase/firestore"
-import { db } from "@/lib/firebase"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Zap, Wifi, Trash2, AlertCircle, Loader2 } from "lucide-react"
+import { useEffect, useState } from 'react'
+
+import { useRouter } from 'next/navigation'
+
+import { collection, deleteDoc, doc, getDocs, orderBy, query } from 'firebase/firestore'
+import { AlertCircle, Loader2, Trash2, Wifi, Zap } from 'lucide-react'
+
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -18,11 +25,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
+import { useAuth } from '@/lib/auth'
+import { getInitializedDb } from '@/lib/firebase'
 
 interface Comparacion {
   id: string
-  tipo: "luz" | "internet"
+  tipo: 'luz' | 'internet'
   fechaCreacion: any
   tarifaElegida: any
   datosEntrada: any
@@ -38,14 +49,18 @@ export default function MisComparacionesPage() {
 
   useEffect(() => {
     if (!user) {
-      router.push("/login")
+      router.push('/login')
       return
     }
 
     const cargarComparaciones = async () => {
       try {
         setLoading(true)
-        const q = query(collection(db, "usuarios", user.uid, "comparaciones"), orderBy("fechaCreacion", "desc"))
+        const db = await getInitializedDb()
+        const q = query(
+          collection(db, 'usuarios', user.uid, 'comparaciones'),
+          orderBy('fechaCreacion', 'desc')
+        )
         const querySnapshot = await getDocs(q)
 
         const comparacionesData: Comparacion[] = []
@@ -58,8 +73,8 @@ export default function MisComparacionesPage() {
 
         setComparaciones(comparacionesData)
       } catch (err) {
-        console.error("Error al cargar comparaciones:", err)
-        setError("Error al cargar tus comparaciones. Por favor, inténtalo de nuevo.")
+        console.error('Error al cargar comparaciones:', err)
+        setError('Error al cargar tus comparaciones. Por favor, inténtalo de nuevo.')
       } finally {
         setLoading(false)
       }
@@ -73,38 +88,39 @@ export default function MisComparacionesPage() {
 
     try {
       setDeleteLoading(id)
-      await deleteDoc(doc(db, "usuarios", user.uid, "comparaciones", id))
+      const db = await getInitializedDb()
+      await deleteDoc(doc(db, 'usuarios', user.uid, 'comparaciones', id))
       setComparaciones((prev) => prev.filter((comp) => comp.id !== id))
     } catch (err) {
-      console.error("Error al eliminar comparación:", err)
-      setError("Error al eliminar la comparación. Por favor, inténtalo de nuevo.")
+      console.error('Error al eliminar comparación:', err)
+      setError('Error al eliminar la comparación. Por favor, inténtalo de nuevo.')
     } finally {
       setDeleteLoading(null)
     }
   }
 
   const formatFecha = (timestamp: any) => {
-    if (!timestamp) return "Fecha desconocida"
+    if (!timestamp) return 'Fecha desconocida'
 
     try {
       const fecha = timestamp.toDate()
-      return new Intl.DateTimeFormat("es-ES", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+      return new Intl.DateTimeFormat('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       }).format(fecha)
     } catch (err) {
-      return "Fecha inválida"
+      return 'Fecha inválida'
     }
   }
 
   if (loading) {
     return (
-      <div className="container py-12 flex items-center justify-center min-h-[calc(100vh-16rem)]">
-        <div className="flex flex-col items-center gap-2">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className='container py-12 flex items-center justify-center min-h-[calc(100vh-16rem)]'>
+        <div className='flex flex-col items-center gap-2'>
+          <Loader2 className='h-8 w-8 animate-spin text-primary' />
           <p>Cargando tus comparaciones...</p>
         </div>
       </div>
@@ -112,16 +128,16 @@ export default function MisComparacionesPage() {
   }
 
   return (
-    <div className="container py-12">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Mis Comparaciones</h1>
-          <p className="text-muted-foreground">Revisa y gestiona tus comparaciones guardadas</p>
+    <div className='container py-12'>
+      <div className='max-w-4xl mx-auto'>
+        <div className='mb-8'>
+          <h1 className='text-3xl font-bold mb-2'>Mis Comparaciones</h1>
+          <p className='text-muted-foreground'>Revisa y gestiona tus comparaciones guardadas</p>
         </div>
 
         {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertCircle className="h-4 w-4" />
+          <Alert variant='destructive' className='mb-6'>
+            <AlertCircle className='h-4 w-4' />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -134,22 +150,22 @@ export default function MisComparacionesPage() {
                 Realiza una comparación de tarifas para guardarla y consultarla más tarde
               </CardDescription>
             </CardHeader>
-            <CardFooter className="flex gap-4">
-              <Button onClick={() => router.push("/comparador-luz")}>Comparar Luz</Button>
-              <Button variant="outline" onClick={() => router.push("/comparador-internet")}>
+            <CardFooter className='flex gap-4'>
+              <Button onClick={() => router.push('/comparador-luz')}>Comparar Luz</Button>
+              <Button variant='outline' onClick={() => router.push('/comparador-internet')}>
                 Comparar Internet
               </Button>
             </CardFooter>
           </Card>
         ) : (
-          <Tabs defaultValue="todas" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="todas">Todas</TabsTrigger>
-              <TabsTrigger value="luz">Luz</TabsTrigger>
-              <TabsTrigger value="internet">Internet</TabsTrigger>
+          <Tabs defaultValue='todas' className='w-full'>
+            <TabsList className='grid w-full grid-cols-3'>
+              <TabsTrigger value='todas'>Todas</TabsTrigger>
+              <TabsTrigger value='luz'>Luz</TabsTrigger>
+              <TabsTrigger value='internet'>Internet</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="todas" className="space-y-4 mt-6">
+            <TabsContent value='todas' className='space-y-4 mt-6'>
               {comparaciones.map((comparacion) => (
                 <ComparacionCard
                   key={comparacion.id}
@@ -161,9 +177,9 @@ export default function MisComparacionesPage() {
               ))}
             </TabsContent>
 
-            <TabsContent value="luz" className="space-y-4 mt-6">
+            <TabsContent value='luz' className='space-y-4 mt-6'>
               {comparaciones
-                .filter((c) => c.tipo === "luz")
+                .filter((c) => c.tipo === 'luz')
                 .map((comparacion) => (
                   <ComparacionCard
                     key={comparacion.id}
@@ -175,9 +191,9 @@ export default function MisComparacionesPage() {
                 ))}
             </TabsContent>
 
-            <TabsContent value="internet" className="space-y-4 mt-6">
+            <TabsContent value='internet' className='space-y-4 mt-6'>
               {comparaciones
-                .filter((c) => c.tipo === "internet")
+                .filter((c) => c.tipo === 'internet')
                 .map((comparacion) => (
                   <ComparacionCard
                     key={comparacion.id}
@@ -202,19 +218,24 @@ interface ComparacionCardProps {
   formatFecha: (timestamp: any) => string
 }
 
-function ComparacionCard({ comparacion, onDelete, deleteLoading, formatFecha }: ComparacionCardProps) {
+function ComparacionCard({
+  comparacion,
+  onDelete,
+  deleteLoading,
+  formatFecha,
+}: ComparacionCardProps) {
   const [dialogOpen, setDialogOpen] = useState(false)
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className='flex justify-between items-start'>
           <div>
-            <CardTitle className="flex items-center gap-2">
-              {comparacion.tipo === "luz" ? (
-                <Zap className="h-5 w-5 text-primary" />
+            <CardTitle className='flex items-center gap-2'>
+              {comparacion.tipo === 'luz' ? (
+                <Zap className='h-5 w-5 text-primary' />
               ) : (
-                <Wifi className="h-5 w-5 text-primary" />
+                <Wifi className='h-5 w-5 text-primary' />
               )}
               {comparacion.tarifaElegida.nombre}
             </CardTitle>
@@ -224,23 +245,24 @@ function ComparacionCard({ comparacion, onDelete, deleteLoading, formatFecha }: 
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-destructive">
-                <Trash2 className="h-4 w-4" />
+              <Button variant='ghost' size='icon' className='text-destructive'>
+                <Trash2 className='h-4 w-4' />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>¿Eliminar comparación?</DialogTitle>
                 <DialogDescription>
-                  Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar esta comparación?
+                  Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar esta
+                  comparación?
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                <Button variant='outline' onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
                 <Button
-                  variant="destructive"
+                  variant='destructive'
                   onClick={() => {
                     onDelete(comparacion.id).then(() => setDialogOpen(false))
                   }}
@@ -248,11 +270,11 @@ function ComparacionCard({ comparacion, onDelete, deleteLoading, formatFecha }: 
                 >
                   {deleteLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                       Eliminando...
                     </>
                   ) : (
-                    "Eliminar"
+                    'Eliminar'
                   )}
                 </Button>
               </DialogFooter>
@@ -261,62 +283,74 @@ function ComparacionCard({ comparacion, onDelete, deleteLoading, formatFecha }: 
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          {comparacion.tipo === "luz" ? (
+        <div className='space-y-2'>
+          {comparacion.tipo === 'luz' ? (
             <>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Precio:</span>
-                <span className="font-medium">{comparacion.tarifaElegida.precio.toFixed(4)} €/kWh</span>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Precio:</span>
+                <span className='font-medium'>
+                  {comparacion.tarifaElegida.precio.toFixed(4)} €/kWh
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Consumo mensual:</span>
-                <span className="font-medium">{comparacion.datosEntrada.consumoMensual} kWh</span>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Consumo mensual:</span>
+                <span className='font-medium'>{comparacion.datosEntrada.consumoMensual} kWh</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Potencia contratada:</span>
-                <span className="font-medium">{comparacion.datosEntrada.potenciaContratada} kW</span>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Potencia contratada:</span>
+                <span className='font-medium'>
+                  {comparacion.datosEntrada.potenciaContratada} kW
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Precio mensual estimado:</span>
-                <span className="font-medium">{comparacion.tarifaElegida.precioMensual.toFixed(2)} €/mes</span>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Precio mensual estimado:</span>
+                <span className='font-medium'>
+                  {comparacion.tarifaElegida.precioMensual.toFixed(2)} €/mes
+                </span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className='flex justify-between text-green-600'>
                 <span>Ahorro anual estimado:</span>
-                <span className="font-bold">{comparacion.tarifaElegida.ahorroAnual.toFixed(2)} €/año</span>
+                <span className='font-bold'>
+                  {comparacion.tarifaElegida.ahorroAnual.toFixed(2)} €/año
+                </span>
               </div>
             </>
           ) : (
             <>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Precio:</span>
-                <span className="font-medium">{comparacion.tarifaElegida.precio.toFixed(2)} €/mes</span>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Precio:</span>
+                <span className='font-medium'>
+                  {comparacion.tarifaElegida.precio.toFixed(2)} €/mes
+                </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Velocidad:</span>
-                <span className="font-medium">{comparacion.tarifaElegida.velocidad} Mb</span>
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Velocidad:</span>
+                <span className='font-medium'>{comparacion.tarifaElegida.velocidad} Mb</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Servicios:</span>
-                <span className="font-medium">
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Servicios:</span>
+                <span className='font-medium'>
                   {[
-                    comparacion.tarifaElegida.telefonia ? "Fijo" : null,
-                    comparacion.tarifaElegida.movil ? "Móvil" : null,
+                    comparacion.tarifaElegida.telefonia ? 'Fijo' : null,
+                    comparacion.tarifaElegida.movil ? 'Móvil' : null,
                   ]
                     .filter(Boolean)
-                    .join(", ") || "Solo Internet"}
+                    .join(', ') || 'Solo Internet'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Permanencia:</span>
-                <span className="font-medium">
+              <div className='flex justify-between'>
+                <span className='text-muted-foreground'>Permanencia:</span>
+                <span className='font-medium'>
                   {comparacion.tarifaElegida.permanencia > 0
                     ? `${comparacion.tarifaElegida.permanencia} meses`
-                    : "Sin permanencia"}
+                    : 'Sin permanencia'}
                 </span>
               </div>
-              <div className="flex justify-between text-green-600">
+              <div className='flex justify-between text-green-600'>
                 <span>Ahorro anual estimado:</span>
-                <span className="font-bold">{comparacion.tarifaElegida.ahorroAnual.toFixed(2)} €/año</span>
+                <span className='font-bold'>
+                  {comparacion.tarifaElegida.ahorroAnual.toFixed(2)} €/año
+                </span>
               </div>
             </>
           )}
@@ -324,13 +358,13 @@ function ComparacionCard({ comparacion, onDelete, deleteLoading, formatFecha }: 
       </CardContent>
       <CardFooter>
         <Button
-          variant="outline"
-          className="w-full"
+          variant='outline'
+          className='w-full'
           onClick={() => {
-            if (comparacion.tipo === "luz") {
-              window.location.href = "/comparador-luz"
+            if (comparacion.tipo === 'luz') {
+              window.location.href = '/comparador-luz'
             } else {
-              window.location.href = "/comparador-internet"
+              window.location.href = '/comparador-internet'
             }
           }}
         >
@@ -340,4 +374,3 @@ function ComparacionCard({ comparacion, onDelete, deleteLoading, formatFecha }: 
     </Card>
   )
 }
-

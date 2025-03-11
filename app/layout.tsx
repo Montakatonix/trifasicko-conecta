@@ -1,38 +1,39 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-import "./globals.css"
-import { AuthProvider } from "@/components/auth-provider"
-import Header from "@/components/header"
-import Footer from "@/components/footer"
-import { Chatbot } from "@/components/chatbot"
-import { Notifications } from "@/components/notifications"
+import { Inter } from 'next/font/google'
 
-const inter = Inter({ subsets: ["latin"] })
+import { Chatbot } from '@/components/chatbot'
+import Footer from '@/components/footer'
+import Header from '@/components/header'
+import { NewsUpdater } from '@/components/news-updater'
+import { Notifications } from '@/components/notifications'
+import { ThemeProvider } from '@/components/theme-provider'
 
-export const metadata: Metadata = {
-  title: "Trifasicko Conecta | Comparador de Tarifas",
-  description: "Encuentra las mejores tarifas de luz e Internet con nuestro comparador profesional",
-  generator: 'v0.dev'
+import { AuthProvider } from '@/lib/auth'
+
+import './globals.css'
+
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata = {
+  title: 'Trifasicko Conecta',
+  description: 'Compara y ahorra en tus servicios de luz, internet y más',
 }
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es">
+    <html lang='es' suppressHydrationWarning>
       <body className={inter.className}>
-        <AuthProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-            <Notifications />
-            <Chatbot />
-          </div>
-        </AuthProvider>
+        <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
+          <AuthProvider>
+            <div className='min-h-screen flex flex-col'>
+              <Header />
+              <main className='flex-1'>{children}</main>
+              <Footer />
+              <NewsUpdater />
+              <Notifications />
+              <Chatbot />
+            </div>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

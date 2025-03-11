@@ -1,47 +1,46 @@
-import { initializeApp, getApps, type FirebaseApp, FirebaseError } from "firebase/app"
-import { 
-  getFirestore, 
-  type Firestore, 
-  enableMultiTabIndexedDbPersistence,
-  enableNetwork as enableFirestoreNetwork,
-  disableNetwork as disableFirestoreNetwork
-} from "firebase/firestore"
-import { 
-  getAuth, 
-  type Auth, 
-  browserLocalPersistence, 
+import { type Analytics, getAnalytics } from 'firebase/analytics'
+import { type FirebaseApp, FirebaseError, getApps, initializeApp } from 'firebase/app'
+import {
+  type Auth,
+  browserLocalPersistence,
+  getAuth,
   setPersistence,
   signInAnonymously,
-  signInWithCustomToken
-} from "firebase/auth"
-import { getAnalytics, type Analytics } from "firebase/analytics"
-import { getStorage, type FirebaseStorage } from "firebase/storage"
+  signInWithCustomToken,
+} from 'firebase/auth'
+import {
+  type Firestore,
+  disableNetwork as disableFirestoreNetwork,
+  enableNetwork as enableFirestoreNetwork,
+  enableMultiTabIndexedDbPersistence,
+  getFirestore,
+} from 'firebase/firestore'
+import { type FirebaseStorage, getStorage } from 'firebase/storage'
+
 import { errorRecovery } from './services/error-recovery'
 
 // Tipos personalizados para errores
 interface FirebaseInitError extends FirebaseError {
-  customData?: {
-    [key: string]: any;
-  };
+  customData?: Record<string, unknown>
 }
 
 const requiredEnvVars = [
-  "NEXT_PUBLIC_FIREBASE_API_KEY",
-  "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-  "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-  "NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET",
-  "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
-  "NEXT_PUBLIC_FIREBASE_APP_ID",
-  "NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID"
+  'NEXT_PUBLIC_FIREBASE_API_KEY',
+  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
+  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
+  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
+  'NEXT_PUBLIC_FIREBASE_APP_ID',
+  'NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID',
 ] as const
 
 // Verificar variables de entorno antes de inicializar
-const missingEnvVars = requiredEnvVars.filter(envVar => !process.env[envVar])
+const missingEnvVars = requiredEnvVars.filter((envVar) => !process.env[envVar])
 
 if (missingEnvVars.length > 0) {
   const errorMessage = `
     Missing required environment variables:
-    ${missingEnvVars.join("\n    ")}
+    ${missingEnvVars.join('\n    ')}
     
     Please check the following:
     1. Ensure you have a .env or .env.local file in your project root
@@ -53,7 +52,7 @@ if (missingEnvVars.length > 0) {
   `.trim()
 
   console.error(errorMessage)
-  
+
   if (typeof window !== 'undefined') {
     // Notificar al usuario a través del sistema de error recovery
     const error = new Error(errorMessage)
@@ -70,7 +69,7 @@ const firebaseConfig = {
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET!,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID!,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID!,
 } as const
 
 // Tipos para el singleton
@@ -100,10 +99,10 @@ async function initializeFirebase(): Promise<FirebaseServices> {
 
     const existingApps = getApps()
     const app = existingApps.length > 0 ? existingApps[0] : initializeApp(firebaseConfig)
-    
+
     // Configurar el servicio de recuperación de errores
     errorRecovery.setApp(app)
-    
+
     // Inicializar servicios
     const auth = getAuth(app)
     const db = getFirestore(app)
@@ -116,9 +115,11 @@ async function initializeFirebase(): Promise<FirebaseServices> {
     try {
       await enableMultiTabIndexedDbPersistence(db)
     } catch (err) {
-      if (err instanceof FirebaseError && 
-          err.code !== 'failed-precondition' && 
-          err.code !== 'unimplemented') {
+      if (
+        err instanceof FirebaseError &&
+        err.code !== 'failed-precondition' &&
+        err.code !== 'unimplemented'
+      ) {
         await errorRecovery.handleError(err)
       }
     }
@@ -127,7 +128,7 @@ async function initializeFirebase(): Promise<FirebaseServices> {
       app,
       db,
       auth,
-      storage
+      storage,
     }
 
     // Inicializar Analytics solo si está habilitado
@@ -148,10 +149,12 @@ async function initializeFirebase(): Promise<FirebaseServices> {
       console.log('Reconnecting to Firebase services...')
       try {
         // Intentar reconectar servicios
-        await Promise.all([
-          enableFirestoreNetwork(db),
-          auth.currentUser && signInWithCustomToken(auth, await auth.currentUser.getIdToken())
-        ].filter(Boolean))
+        await Promise.all(
+          [
+            enableFirestoreNetwork(db),
+            auth.currentUser && signInWithCustomToken(auth, await auth.currentUser.getIdToken()),
+          ].filter(Boolean)
+        )
       } catch (error) {
         if (error instanceof Error) {
           await errorRecovery.handleError(error)
@@ -166,29 +169,31 @@ async function initializeFirebase(): Promise<FirebaseServices> {
     })
 
     // Configurar manejadores de error globales para Firebase
-    auth.onAuthStateChanged(async (user) => {
-      if (!user && services?.auth.currentUser) {
-        try {
-          await signInAnonymously(auth)
-        } catch (error) {
-          if (error instanceof Error) {
-            await errorRecovery.handleError(error)
+    if (!process.env.NEXT_PUBLIC_FIREBASE_TEST_MODE) {
+      auth.onAuthStateChanged(async (user) => {
+        if (!user && services?.auth.currentUser) {
+          try {
+            await signInAnonymously(auth)
+          } catch (error) {
+            if (error instanceof Error) {
+              await errorRecovery.handleError(error)
+            }
           }
         }
-      }
-    })
+      })
+    }
 
     return services
   } catch (error) {
     if (error instanceof FirebaseError) {
-      console.error("Firebase initialization error:", {
+      console.error('Firebase initialization error:', {
         message: error.message,
         code: error.code,
-        customData: (error as FirebaseInitError).customData
+        customData: (error as FirebaseInitError).customData,
       })
       await errorRecovery.handleError(error)
     } else {
-      console.error("Unknown initialization error:", error)
+      console.error('Unknown initialization error:', error)
       if (error instanceof Error) {
         await errorRecovery.handleError(error)
       }
@@ -198,25 +203,42 @@ async function initializeFirebase(): Promise<FirebaseServices> {
 }
 
 // Exportar servicios inicializados
-let app: FirebaseApp
-let db: Firestore
-let auth: Auth
-let storage: FirebaseStorage
+let app: FirebaseApp | undefined
+let db: Firestore | undefined
+let auth: Auth | undefined
+let storage: FirebaseStorage | undefined
+let initialized = false
 
-// Solo inicializar en el cliente
-if (typeof window !== 'undefined') {
+// Solo inicializar en el cliente y cuando no estamos en modo de prueba
+if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_FIREBASE_TEST_MODE) {
   // Inicialización asíncrona
-  initializeFirebase().then((initializedServices) => {
-    app = initializedServices.app
-    db = initializedServices.db
-    auth = initializedServices.auth
-    storage = initializedServices.storage
-  }).catch(async (error) => {
-    console.error('Failed to initialize Firebase:', error)
-    if (error instanceof Error) {
-      await errorRecovery.handleError(error)
-    }
-  })
+  initializeFirebase()
+    .then((initializedServices) => {
+      app = initializedServices.app
+      db = initializedServices.db
+      auth = initializedServices.auth
+      storage = initializedServices.storage
+      initialized = true
+
+      // Configurar manejadores de error globales para Firebase después de la inicialización
+      auth?.onAuthStateChanged(async (user) => {
+        if (!user && auth?.currentUser) {
+          try {
+            await signInAnonymously(auth)
+          } catch (error) {
+            if (error instanceof Error) {
+              await errorRecovery.handleError(error)
+            }
+          }
+        }
+      })
+    })
+    .catch(async (error) => {
+      console.error('Failed to initialize Firebase:', error)
+      if (error instanceof Error) {
+        await errorRecovery.handleError(error)
+      }
+    })
 }
 
 // Función de utilidad para verificar el estado de la conexión
@@ -224,5 +246,56 @@ export function isConnected(): boolean {
   return isOnline
 }
 
-export { app, db, auth, storage }
+// Función para obtener la instancia de Firestore inicializada
+export async function getInitializedDb(): Promise<Firestore> {
+  if (!initialized || !db) {
+    const services = await initializeFirebase()
+    return services.db
+  }
+  return db
+}
 
+// Función para obtener la instancia de Auth inicializada
+export async function getInitializedAuth(): Promise<Auth> {
+  if (!initialized || !auth) {
+    const services = await initializeFirebase()
+    return services.auth
+  }
+  return auth
+}
+
+// Función para obtener la instancia de Storage inicializada
+export async function getInitializedStorage(): Promise<FirebaseStorage> {
+  if (!initialized || !storage) {
+    const services = await initializeFirebase()
+    return services.storage
+  }
+  return storage
+}
+
+// Función para obtener la instancia de Analytics inicializada
+export async function getInitializedAnalytics(): Promise<Analytics | undefined> {
+  if (!initialized) {
+    const services = await initializeFirebase()
+    return services.analytics
+  }
+  return services?.analytics
+}
+
+// Función para obtener la instancia de App inicializada
+export async function getInitializedApp(): Promise<FirebaseApp> {
+  if (!initialized || !app) {
+    const services = await initializeFirebase()
+    return services.app
+  }
+  return app
+}
+
+// Función para reinicializar Firebase (útil para pruebas)
+export async function reinitializeFirebase(): Promise<FirebaseServices> {
+  services = null
+  initialized = false
+  return initializeFirebase()
+}
+
+export { app, auth, storage }

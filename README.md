@@ -32,18 +32,21 @@ Plataforma web para la comparación de tarifas de luz e internet, desarrollada c
 ## Instalación
 
 1. Clonar el repositorio:
+
 ```bash
 git clone https://github.com/Montakatonix/trifasicko-conecta.git
 cd trifasicko-conecta
 ```
 
 2. Instalar dependencias:
+
 ```bash
 npm install
 ```
 
 3. Configurar variables de entorno:
-Crear un archivo `.env.local` con las siguientes variables:
+   Crear un archivo `.env.local` con las siguientes variables:
+
 ```env
 NEXT_PUBLIC_FIREBASE_API_KEY=tu_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=tu_auth_domain
@@ -55,6 +58,7 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=tu_measurement_id
 ```
 
 4. Iniciar el servidor de desarrollo:
+
 ```bash
 npm run dev
 ```
@@ -88,4 +92,4 @@ El proyecto está configurado para ser desplegado en Vercel. Solo necesitas:
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles. 
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
