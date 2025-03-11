@@ -1,26 +1,19 @@
 // Tipos para el comparador de tarifas de luz
 export interface TarifaLuz {
   id: string
-  comercializadora: string
+  compañia: string
   nombre: string
-  potenciaContratada: number
-  precioKWh: number
-  precioPotencia: number
+  precio: number
+  potenciaContratada?: number
   descuento?: number
-  caracteristicas: string[]
-  tipo?: string
+  tipo?: 'fijo' | 'variable'
   urlContratacion?: string
   logoUrl?: string
-  compañia?: string
 }
 
 export interface ConsumoElectrico {
   consumoPunta?: number
   consumoValle?: number
-  horasPunta?: number
-  horasValle?: number
-  consumoMensual?: number
-  potenciaContratada: number
 }
 
 export interface Electrodomestico {
@@ -32,28 +25,26 @@ export interface Electrodomestico {
 }
 
 // Tipos para el comparador de tarifas de internet
+export interface FiltrosInternet {
+  codigoPostal: string
+  velocidadMinima: number
+  tipoConexion: string
+  precioMaximo: number
+  sinPermanencia: boolean
+}
+
 export interface TarifaInternet {
   id: string
   operador: string
   nombre: string
-  tipo: string
   velocidadBajada: number
   velocidadSubida: number
   precio: number
   permanencia: number
   cobertura: string[]
   caracteristicas: string[]
-  urlContratacion?: string
-  logoUrl?: string
-}
-
-export interface FiltrosInternet {
-  velocidadMinima: number
-  tipoConexion: string
-  precioMaximo: number
-  sinPermanencia: boolean
-  incluyeMovil: boolean
-  incluyeTV: boolean
+  urlContratacion: string
+  logoUrl: string
 }
 
 // Tipos para reseñas y valoraciones
@@ -313,4 +304,65 @@ export interface FormularioContacto {
   email: string
   telefono?: string
   mensaje: string
+}
+
+// Tipos para el comparador de propiedades
+export interface Property {
+  id: string
+  title: string
+  description: string
+  price: number
+  location: string
+  type: 'casa' | 'piso'
+  bedrooms: number
+  bathrooms: number
+  area: number
+  images: string[]
+  features: string[]
+  status: 'disponible' | 'reservado' | 'vendido'
+  yearBuilt?: number
+  parking?: number
+  garden?: boolean
+  pool?: boolean
+  terrace?: boolean
+  furnished?: boolean
+  energyRating?: string
+  coordinates?: {
+    lat: number
+    lng: number
+  }
+}
+
+export interface PropertyFilters {
+  location?: string
+  minPrice?: number
+  maxPrice?: number
+  type?: 'casa' | 'piso' | 'all'
+  minBedrooms?: number
+  minBathrooms?: number
+  minArea?: number
+  maxArea?: number
+  features?: string[]
+  status?: 'disponible' | 'reservado' | 'vendido'
+  furnished?: boolean
+  garden?: boolean
+  pool?: boolean
+  terrace?: boolean
+}
+
+export interface PropertySearchResponse {
+  properties: Property[]
+  total: number
+  page: number
+  totalPages: number
+}
+
+// Tipos comunes
+export interface ContactForm {
+  name: string
+  email: string
+  phone: string
+  message: string
+  service: 'luz' | 'internet' | 'propiedad'
+  propertyId?: string
 }

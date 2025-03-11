@@ -1,154 +1,119 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from '@/components/ui/navigation-menu'
-import { cn } from '@/lib/utils'
-import React from 'react'
+import { Home, Zap, Wifi, Calculator, Menu, X } from 'lucide-react'
+import { useState } from 'react'
 
-const services = [
+const navigation = [
   {
-    title: 'Comparador de Luz',
+    name: 'Inicio',
+    href: '/',
+    icon: Home,
+  },
+  {
+    name: 'Propiedades',
+    href: '/propiedades',
+    icon: Home,
+  },
+  {
+    name: 'Comparador Luz',
     href: '/comparador-luz',
-    description: 'Encuentra las mejores tarifas de electricidad y ahorra en tu factura.',
+    icon: Zap,
   },
   {
-    title: 'Comparador de Internet',
+    name: 'Comparador Internet',
     href: '/comparador-internet',
-    description: 'Compara ofertas de fibra, móvil y televisión de los principales operadores.',
+    icon: Wifi,
   },
   {
-    title: 'Calculadora de Ahorro',
+    name: 'Calculadora Ahorro',
     href: '/calculadora-ahorro',
-    description: 'Calcula cuánto puedes ahorrar cambiando tus contratos de luz e internet.',
-  },
-]
-
-const resources = [
-  {
-    title: 'Blog',
-    href: '/blog',
-    description: 'Artículos y guías sobre energía, telecomunicaciones y ahorro.',
-  },
-  {
-    title: 'Comunidad',
-    href: '/comunidad',
-    description: 'Únete a nuestra comunidad y comparte experiencias con otros usuarios.',
-  },
-  {
-    title: 'Preguntas Frecuentes',
-    href: '/preguntas-frecuentes',
-    description: 'Resolvemos tus dudas sobre nuestros servicios y comparadores.',
+    icon: Calculator,
   },
 ]
 
 export function Navbar() {
+  const pathname = usePathname()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block">
-              Trifasicko Conecta
-            </span>
+      <nav className="container mx-auto flex h-16 items-center justify-between px-4">
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center space-x-2">
+            <span className="text-xl font-bold">Trifasicko</span>
+            <span className="text-primary font-medium">Conecta</span>
           </Link>
-          <NavigationMenu>
-            <NavigationMenuList>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Servicios</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                    {services.map((service) => (
-                      <li key={service.href} className="row-span-3">
-                        <NavigationMenuLink asChild>
-                          <Link
-                            href={service.href}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                          >
-                            <div className="text-sm font-medium leading-none">{service.title}</div>
-                            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                              {service.description}
-                            </p>
-                          </Link>
-                        </NavigationMenuLink>
-                      </li>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <NavigationMenuTrigger>Recursos</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {resources.map((resource) => (
-                      <ListItem
-                        key={resource.href}
-                        title={resource.title}
-                        href={resource.href}
-                      >
-                        {resource.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              <NavigationMenuItem>
-                <Link href="/sobre-nosotros" legacyBehavior passHref>
-                  <NavigationMenuLink className={cn(
-                    'group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50'
-                  )}>
-                    Sobre Nosotros
-                  </NavigationMenuLink>
+
+          <div className="hidden md:flex md:gap-6">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary ${
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.name}
                 </Link>
-              </NavigationMenuItem>
-            </NavigationMenuList>
-          </NavigationMenu>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
-            <Button variant="outline" className="mr-2">
-              <Link href="/login">Iniciar Sesión</Link>
-            </Button>
-            <Button>
-              <Link href="/registro">Registrarse</Link>
-            </Button>
+              )
+            })}
           </div>
-          <ThemeToggle />
         </div>
-      </div>
+
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <Button asChild className="hidden md:inline-flex">
+            <Link href="/contacto">Contactar</Link>
+          </Button>
+          <button
+            className="md:hidden"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile menu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 top-16 z-50 bg-background md:hidden">
+          <nav className="container mx-auto flex flex-col gap-4 p-4">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`flex items-center gap-2 text-lg font-medium transition-colors hover:text-primary ${
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.name}
+                </Link>
+              )
+            })}
+            <Button asChild className="mt-4">
+              <Link href="/contacto" onClick={() => setIsMenuOpen(false)}>
+                Contactar
+              </Link>
+            </Button>
+          </nav>
+        </div>
+      )}
     </header>
   )
-}
-
-const ListItem = React.forwardRef<
-  React.ElementRef<'a'>,
-  React.ComponentPropsWithoutRef<'a'>
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            'block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground',
-            className
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  )
-}) 
+} 
