@@ -13,7 +13,7 @@
       "NODE_VERSION": "18.x"
     }
   },
-  "regions": ["mad1"],
+  "regions": ["cdg1"],
   "git": {
     "deploymentEnabled": {
       "main": true
